@@ -19,12 +19,12 @@ Server::App.controllers :users do
 
   post :create, :provides => :json do
     @user = User.create(:name => params[:name])
-    @user.to_json
+    @user.to_json(:absolute_url => uri(@user.avatar.url))
   end
 
   get :show, :provides => :json do
     user = find_user(params)
-    user.to_json
+    user.to_json(:absolute_url => uri(user.avatar.url))
   end
 
   get :territories, :provides => :json do
@@ -50,7 +50,6 @@ Server::App.controllers :users do
   post :avatar, :provides => :json do
     @user.avatar = params[:avatar]
     @user.save
-    res = {:avatar => uri(@user.avatar.url) }
-    res.to_json
+    @user.to_json(:absolute_url => uri(@user.avatar.url))
   end
 end

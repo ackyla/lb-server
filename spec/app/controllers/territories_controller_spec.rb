@@ -65,7 +65,7 @@ describe "TerritoriesController" do
       expect(last_response.body).to match_json_expression(pattern)
       matcher = JsonExpressions::Matcher.new(pattern)
       matcher =~ JSON.parse(last_response.body)
-      expect(user.territories).to include(Territory.find(matcher.captures[:territory_id]))
+      expect(user.my_territories).to include(Territory.find(matcher.captures[:territory_id]))
     end
   end
 
@@ -138,7 +138,7 @@ describe "TerritoriesController" do
           user_id: @user.id,
           token: wildcard_matcher,
           name: @user.name,
-          gps_point: 501,
+          gps_point: 471,
           gps_point_limit: Integer,
           level: Integer,
           exp: Integer,

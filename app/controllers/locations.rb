@@ -20,6 +20,6 @@ Server::App.controllers :locations do
       response = {status: "failure"}
     end
 
-    JSON.unparse({user: @user.to_hash}.merge(response))
+    JSON.unparse({user: @user.to_hash(:absolute_url => uri(@user.avatar.url))}.merge(response))
   end
 end

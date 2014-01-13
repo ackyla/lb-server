@@ -11,7 +11,7 @@ Server::App.controllers :territories do
 
   post :create, :provides => :json do
     ter = @user.add_territory(params[:latitude], params[:longitude], params[:character_id])
-    res = {territory: ter.to_hash, user: ter.owner.to_hash}
+    res = {territory: ter.to_hash, user: ter.owner.to_hash(:absolute_url => uri(@user.avatar.url))}
     JSON.unparse(res)
   end
 
@@ -37,7 +37,7 @@ Server::App.controllers :territories do
     return status_failure "GPSポイントが指定されていません." unless params[:gps_point]
     point = params[:gps_point].to_i
     return status_failure unless @territory.supply point
-    return JSON.unparse(status_ok({supplied_point: point, terrritory: @territory.to_hash}))
+    return JSON.unparse(status_ok({supplied_point: point, territory: @territory.to_hash, user: @user.reload.to_hash(:absolute_url => uri(@user.avatar.url))}))
   end
 
   post :move, provides: :json do
