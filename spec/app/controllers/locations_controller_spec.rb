@@ -6,6 +6,8 @@ describe "LocationsController" do
   describe "#create" do
     before do
       @user = create(:user)
+      @user.avatar = File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))
+      @user.save
       @params = {
         user_id: @user.id,
         token: @user.token,
@@ -43,7 +45,7 @@ describe "LocationsController" do
           exp: Integer,
           created_at: wildcard_matcher,
           updated_at: wildcard_matcher,
-          avatar: /.*.jpg/
+          avatar: /http.*.(jpg|jpeg)/
         },
         location: {
           location_id: :location_id,

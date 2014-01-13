@@ -51,17 +51,17 @@ class User < ActiveRecord::Base
     self.save
   end
 
-  def to_hash
+  def to_hash(options=nil)
     hash = Hash[self.attributes]
     hash["user_id"] = self.id
-    hash["avatar"] = self.avatar.url
+    hash["avatar"] = options && options[:absolute_url] ? options[:absolute_url] : self.avatar.url
     hash.delete "id"
     hash
   end
 
   def to_json(options=nil)
     params = self.attributes
-    params["avatar"] = self.avatar.url
+    params["avatar"] = options && options[:absolute_url] ? options[:absolute_url] : self.avatar.url
     ActiveSupport::JSON.encode(params, options)
   end
 
