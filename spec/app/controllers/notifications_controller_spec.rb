@@ -17,12 +17,11 @@ describe "NotificationsController" do
     t
   }
 
-
   describe "#read" do
-    it "レスポンスチェック" do
-      det = Detection.create(location: loc, territory: ter)
-      notif = Notification.new(user: user, detection: det, notification_type: "entering")
-      notif.save
+    let(:det) {Detection.create(location: loc, territory: ter)}
+    let(:notif) {Notification.create(user: user, detection: det, notification_type: "entering")}
+
+    before do
       params = {
         user_id: user.id,
         token: user.token,
@@ -30,8 +29,11 @@ describe "NotificationsController" do
       }
       post '/notifications/read', params
       notif.reload
+    end
 
-      expect(last_response).to be_ok
+    it_behaves_like "response"
+
+    it "既読になる" do
       expect(notif.read).to eq(true)
     end
   end

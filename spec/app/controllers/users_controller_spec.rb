@@ -20,20 +20,11 @@ describe "UsersController" do
   }
 
   describe "#create" do
-    before do
-      @params = {name: "user_1"}
-      post "/users/create", @params
-    end
-
-    it "status check" do
-      expect(last_response).to be_ok
-    end
-
-    it "ユーザ情報返す" do
-      pattern = {
+    let(:params) {{name: "user_1"}}
+    let(:pattern) {{
         id: Integer,
         token: wildcard_matcher,
-        name: @params[:name],
+        name: params[:name],
         gps_point: Integer,
         gps_point_limit: Integer,
         level: Integer,
@@ -42,22 +33,18 @@ describe "UsersController" do
         updated_at: wildcard_matcher,
         avatar: /http.*.(jpg|jpeg)/
       }
-      expect(last_response.body).to match_json_expression(pattern)
-    end
+    }
+
+    before { post "/users/create", params }
+    it_behaves_like "response"
+    it_behaves_like "json"
   end
 
   describe "#show" do
-    before do
-      get "/users/show", {user_id: user.id}
-    end
-
-    it "status check" do
-      expect(last_response).to be_ok
-    end
-
-    it "ユーザ情報取得" do
-      expect(last_response.body).to match_json_expression(user_pattern)
-    end
+    let(:pattern) { user_pattern }
+    before { get "/users/show", {user_id: user.id} }
+    it_behaves_like "response"
+    it_behaves_like "json"
   end
 
   describe "#notifications" do
@@ -78,8 +65,9 @@ describe "UsersController" do
       @json = JSON.parse last_response.body
     end
 
-    it "status check" do
-      expect(last_response).to be_ok
+    it_behaves_like "response"
+
+    it "JSONが正常" do
       ret = @json[0]
       %w(longitude latitude).each{|key|
         expect(ret["location"][key]).to eq(@loc[key.to_sym])
@@ -107,13 +95,31 @@ describe "UsersController" do
       @json = JSON.parse last_response.body
     end
 
-    it "status check" do
-      expect(last_response).to be_ok
+    it_behaves_like "response"
+
+    it "長さが2" do
       expect(@json.length).to eq(2)
     end
   end
 
   describe "/users/territories" do
+    let(:pattern) {
+      {
+        id: :territory_id,
+        radius: Float,
+        owner_id: @user.id,
+        character_id: @character.id,
+        expiration_date: wildcard_matcher,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
+        precision: Float,
+        detection_count: Integer,
+        coordinate_id: Integer,
+        latitude: @latitude,
+        longitude: @longitude
+      }
+    }
+
     before do
       @user = create(:user)
       @character = create(:character)
@@ -128,42 +134,21 @@ describe "UsersController" do
       @json = JSON.parse last_response.body
     end
 
-    it "status check" do
-      expect(last_response).to be_ok
-    end
-
+    it_behaves_like "response"
     it "テリトリー一覧取得" do
-      pattern = {
-        id: :territory_id,
-        radius: Float,
-        owner_id: @user.id,
-        character_id: @character.id,
-        expiration_date: wildcard_matcher,
-        created_at: wildcard_matcher,
-        updated_at: wildcard_matcher,
-        precision: Float,
-        detection_count: Integer,
-        coordinate_id: Integer,
-        latitude: @latitude,
-        longitude: @longitude
-      };
       patterns = [pattern, pattern]
-      expect(@json).to match_json_expression(patterns)
+      expect(last_response.body).to match_json_expression(patterns)
     end
   end
 
   describe "#avatar" do
-
+    let(:pattern) { user_pattern }
+    let(:params) { user_param.merge({avatar: File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))}) }
     before do
-      post "/users/avatar", user_param.merge({avatar: File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))})
+      post "/users/avatar", params
     end
 
-    it "status check" do
-      expect(last_response).to be_ok
-    end
-
-    it "ユーザ情報返す" do
-      expect(last_response.body).to match_json_expression(user_pattern)
-    end
+    it_behaves_like "response"
+    it_behaves_like "json"
   end
 end

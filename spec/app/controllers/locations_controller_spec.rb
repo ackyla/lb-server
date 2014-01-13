@@ -3,42 +3,31 @@ require 'spec_helper'
 
 describe "LocationsController" do
   let(:loc) { create(:location) }
+
   describe "#create" do
-    before do
-      @user = create(:user)
-      @user.avatar = File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))
-      @user.save
-      @params = {
-        user_id: @user.id,
-        token: @user.token,
+    let(:user) {
+      u = create(:user)
+      u.avatar = File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))
+      u.save
+      u
+    }
+
+    let(:params) {
+      {
+        user_id: user.id,
+        token: user.token,
         latitude: loc.coordinate.lat,
         longitude: loc.coordinate.long
       }
-      @pre_point = @user.gps_point
-      @user2 = create(:user2)
-      @user2.locations << loc
-      @ter = build(:territory)
-      @user2.my_territories << @ter
-      @ter.save
-      @user2.save
-      post "/locations/create", @params
+    }
 
-      @user.reload
-      @ter.reload
-    end
-
-    it "レスポンス チェック" do
-      expect(last_response).to be_ok
-    end
-
-    it "ロケーションの生成" do
-      json = JSON.parse last_response.body
-      pattern = {
+    let(:pattern) {
+      {
         status: "ok",
         user: {
-          user_id: @user.id,
+          user_id: user.id,
           token: wildcard_matcher,
-          name: @user.name,
+          name: user.name,
           gps_point: 501,
           gps_point_limit: Integer,
           level: Integer,
@@ -49,46 +38,61 @@ describe "LocationsController" do
         },
         location: {
           location_id: :location_id,
-          user_id: @user.id,
+          user_id: user.id,
           created_at: wildcard_matcher,
           updated_at: wildcard_matcher,
           coordinate_id: Integer,
         }
       }
-      expect(last_response.body).to match_json_expression(pattern)
+    }
+    before do
+      @pre_point = user.gps_point
+      @user2 = create(:user2)
+      @user2.locations << loc
+      @ter = build(:territory)
+      @user2.my_territories << @ter
+      @ter.save
+      @user2.save
+      post "/locations/create", params
+      user.reload
+      @ter.reload
+    end
+
+    it_behaves_like "response"
+    it_behaves_like "json"
+
+    it "ロケーションの生成" do
       matcher = JsonExpressions::Matcher.new(pattern)
       matcher =~ JSON.parse(last_response.body)
-      expect(@user.locations).to include(Location.find(matcher.captures[:location_id]))
+      expect(user.locations).to include(Location.find(matcher.captures[:location_id]))
     end
 
     it "侵入状態の更新" do
-      expect(@user.enemy_territories).to include(@ter)
-      expect(@ter.invaders).to include(@user)
+      expect(user.enemy_territories).to include(@ter)
+      expect(@ter.invaders).to include(user)
       expect(@ter.detection_count).to eq(1)
     end
 
     it "陣力の増加" do
-      expect(@user.gps_point).to be > @pre_point
+      expect(user.gps_point).to be > @pre_point
     end
 
     describe "連続して#createした時" do
       before do
-        @pre_point2 = @user.gps_point
-        post "/locations/create", @params
-        @user.reload
+        @pre_point2 = user.gps_point
+        post "/locations/create", params
+        user.reload
         @json = JSON.parse last_response.body
       end
 
-      it "レスポンス チェック" do
-        expect(last_response).to be_ok
-      end
+      it_behaves_like "response"
 
       it "ステータスがfailure" do
         expect(@json["status"]).to eq("failure")
       end
 
       it "陣力が増加しない" do
-        expect(@user.gps_point).to eq(@pre_point2)
+        expect(user.gps_point).to eq(@pre_point2)
       end
     end
 
@@ -100,13 +104,13 @@ describe "LocationsController" do
         loc.update_attributes(created_at: DateTime.now - over_interval_time)
 
         ["ok", "failure"].each{|status|
-          post "/locations/create", @params
-          @user.reload
+          post "/locations/create", params
+          user.reload
 
           expect(last_response).to be_ok
           json = JSON.parse last_response.body
           expect(json["status"]).to eq(status)
-          expect(@user.locations.all.size).to eq(2)
+          expect(user.locations.all.size).to eq(2)
         }
       end
     end

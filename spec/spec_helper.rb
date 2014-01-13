@@ -63,3 +63,15 @@ def app(app = nil, &blk)
   @app ||= block_given? ? app.instance_eval(&blk) : app
   @app ||= Padrino.application
 end
+
+shared_examples_for "response" do
+  subject { last_response }
+  it{ should be_ok }
+end
+
+shared_examples_for "json" do
+  subject { last_response.body }
+  it "JSONがパターンとマッチする" do
+    should match_json_expression(pattern)
+  end
+end
