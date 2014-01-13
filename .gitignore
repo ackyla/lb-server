@@ -10,3 +10,4 @@ db/*.db
 vendor/ruby/*
 db/schema.rb
 public/avatars/user
+.bundle/
