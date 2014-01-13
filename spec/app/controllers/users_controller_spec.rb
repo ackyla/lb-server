@@ -16,6 +16,23 @@ describe "UsersController" do
       json = JSON.parse last_response.body
       expect(json["name"]).to eq(@params[:name])
     end
+
+    it "ユーザ情報返す" do
+      json = JSON.parse last_response.body
+      pattern = {
+        id: Integer,
+        token: wildcard_matcher,
+        name: @params[:name],
+        gps_point: Integer,
+        gps_point_limit: Integer,
+        level: Integer,
+        exp: Integer,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
+        avatar: /http.*.(jpg|jpeg)/
+      }
+      expect(json).to match_json_expression(pattern)
+    end
   end
 
   describe "/users/show" do
@@ -32,6 +49,23 @@ describe "UsersController" do
 
     it "validate avatar url" do
       expect(last_response).to be_ok
+    end
+
+    it "ユーザ情報取得" do
+      json = JSON.parse last_response.body
+      pattern = {
+        id: @user.id,
+        token: wildcard_matcher,
+        name: @user.name,
+        gps_point: Integer,
+        gps_point_limit: Integer,
+        level: Integer,
+        exp: Integer,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
+        avatar: /http.*.(jpg|jpeg)/
+      }
+      expect(json).to match_json_expression(pattern)
     end
   end
 
@@ -106,9 +140,20 @@ describe "UsersController" do
       expect(@json["avatar"]).not_to be_nil
     end
 
-    it "validate avatar url" do
-      get @json["avatar"]
-      expect(last_response).to be_ok
+    it "ユーザ情報返す" do
+      pattern = {
+        id: @user.id,
+        token: wildcard_matcher,
+        name: @user.name,
+        gps_point: Integer,
+        gps_point_limit: Integer,
+        level: Integer,
+        exp: Integer,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
+        avatar: /http.*.(jpg|jpeg)/
+      }
+      expect(@json).to match_json_expression(pattern)
     end
   end
 end

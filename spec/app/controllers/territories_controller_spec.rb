@@ -33,6 +33,40 @@ describe "TerritoriesController" do
       expect(user.my_territories).to include(created_territory)
       expect(created_territory.radius).to eq(char.radius)
     end
+
+    it "jsonチェック" do
+      json = JSON.parse last_response.body
+      pattern = {
+        user: {
+          user_id: user.id,
+          token: wildcard_matcher,
+          name: user.name,
+          gps_point: 401,
+          gps_point_limit: Integer,
+          level: Integer,
+          exp: Integer,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          avatar: /http.*.(jpg|jpeg)/
+        },
+        territory: {
+          territory_id: :territory_id,
+          radius: Float,
+          owner_id: user.id,
+          character_id: Integer,
+          expiration_date: wildcard_matcher,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          precision: Float,
+          detection_count: Integer,
+          coordinate_id: Integer
+        }
+      }
+      expect(last_response.body).to match_json_expression(pattern)
+      matcher = JsonExpressions::Matcher.new(pattern)
+      matcher =~ JSON.parse(last_response.body)
+      expect(user.territories).to include(Territory.find(matcher.captures[:territory_id]))
+    end
   end
 
   describe "#detections" do
@@ -80,7 +114,8 @@ describe "TerritoriesController" do
     let(:params) { {user_id: user.id, token: user.token, id: ter.id, gps_point: 30} }
 
     before do
-      user.my_territories << ter
+      @user = user
+      @user.my_territories << ter
       @expiration_date = ter.expiration_date
       post "/territories/supply", params
       ter.reload
@@ -92,6 +127,39 @@ describe "TerritoriesController" do
 
     it "テリトリーの有効時間が増加する" do
       expect(ter.expiration_date).to be > @expiration_date
+    end
+
+    it "jsonチェック" do
+      json = JSON.parse last_response.body
+      pattern = {
+        status: "ok",
+        supplied_point: Integer,
+        user: {
+          user_id: @user.id,
+          token: wildcard_matcher,
+          name: @user.name,
+          gps_point: 501,
+          gps_point_limit: Integer,
+          level: Integer,
+          exp: Integer,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          avatar: /http.*.(jpg|jpeg)/
+        },
+        territory: {
+          territory_id: :territory_id,
+          radius: Float,
+          owner_id: @user.id,
+          character_id: Integer,
+          expiration_date: wildcard_matcher,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          precision: Float,
+          detection_count: Integer,
+          coordinate_id: Integer
+        }
+      }
+      expect(last_response.body).to match_json_expression(pattern)
     end
   end
 end
