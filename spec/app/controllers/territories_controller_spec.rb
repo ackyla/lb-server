@@ -10,6 +10,21 @@ describe "TerritoriesController" do
   }
   let(:ter) { create(:territory) }
   let(:char) { create(:character) }
+  let(:ter_pattern) {
+    {
+      territory_id: :territory_id,
+      latitude: Float,
+      longitude: Float,
+      owner_id: user.id,
+      expiration_date: wildcard_matcher,
+      created_at: wildcard_matcher,
+      updated_at: wildcard_matcher,
+      character_id: Integer,
+      precision: Float,
+      radius: Float,
+      detection_count: Integer
+    }
+  }
 
   describe "#create" do
     let(:params) {
@@ -34,18 +49,7 @@ describe "TerritoriesController" do
           updated_at: wildcard_matcher,
           avatar: /http.*.(jpg|jpeg)/
         },
-        territory: {
-          territory_id: :territory_id,
-          radius: char.radius,
-          owner_id: user.id,
-          character_id: char.id,
-          expiration_date: wildcard_matcher,
-          created_at: wildcard_matcher,
-          updated_at: wildcard_matcher,
-          precision: char.precision,
-          detection_count: Integer,
-          coordinate_id: Integer
-        }
+        territory: ter_pattern
       }
     }
 
@@ -57,11 +61,6 @@ describe "TerritoriesController" do
 
     it_behaves_like "response"
     it_behaves_like "json"
-
-    it "テリトリーの検証" do
-      created_territory = Territory.find(@json["territory"]["territory_id"])
-      expect(user.my_territories).to include(created_territory)
-    end
 
     it "テリトリーが追加される" do
       matcher = JsonExpressions::Matcher.new(pattern)
@@ -93,17 +92,21 @@ describe "TerritoriesController" do
   end
 
   describe "#move" do
-    it "move territory" do
-      user.my_territories << ter
-      params = {
+    let(:params) {
+      {
         latitude: 0, longitude: 0,
         id: ter.id, user_id: user.id, token: user.token
       }
+    }
 
+    before do
+      user.my_territories << ter
       post "/territories/move", params
       ter.reload
+    end
 
-      expect(last_response).to be_ok
+    it_behaves_like "response"
+    it "テリトリーが移動する" do
       expect(ter.coordinate.lat).to eq(params[:latitude])
       expect(ter.coordinate.long).to eq(params[:longitude])
     end
@@ -116,9 +119,9 @@ describe "TerritoriesController" do
         status: "ok",
         supplied_point: Integer,
         user: {
-          user_id: @user.id,
+          user_id: user.id,
           token: wildcard_matcher,
-          name: @user.name,
+          name: user.name,
           gps_point: 471,
           gps_point_limit: Integer,
           level: Integer,
@@ -127,24 +130,12 @@ describe "TerritoriesController" do
           updated_at: wildcard_matcher,
           avatar: /http.*.(jpg|jpeg)/
         },
-        territory: {
-          territory_id: :territory_id,
-          radius: Float,
-          owner_id: @user.id,
-          character_id: Integer,
-          expiration_date: wildcard_matcher,
-          created_at: wildcard_matcher,
-          updated_at: wildcard_matcher,
-          precision: Float,
-          detection_count: Integer,
-          coordinate_id: Integer
-        }
+        territory: ter_pattern
       }
     }
 
     before do
-      @user = user
-      @user.my_territories << ter
+      user.my_territories << ter
       @expiration_date = ter.expiration_date
       post "/territories/supply", params
       ter.reload

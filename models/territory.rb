@@ -36,6 +36,9 @@ class Territory < ActiveRecord::Base
     hash = Hash[self.attributes]
     hash[:territory_id] = self.id
     hash.delete "id"
+    hash[:latitude] = self.coordinate.lat
+    hash[:longitude] = self.coordinate.long
+    hash.delete "coordinate_id"
     hash
   end
 

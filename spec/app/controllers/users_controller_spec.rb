@@ -102,42 +102,38 @@ describe "UsersController" do
     end
   end
 
-  describe "/users/territories" do
-    let(:pattern) {
-      {
-        id: :territory_id,
-        radius: Float,
-        owner_id: @user.id,
-        character_id: @character.id,
-        expiration_date: wildcard_matcher,
-        created_at: wildcard_matcher,
-        updated_at: wildcard_matcher,
-        precision: Float,
-        detection_count: Integer,
-        coordinate_id: Integer,
-        latitude: @latitude,
-        longitude: @longitude
-      }
+  describe "#territories" do
+    let(:char) {create(:character)}
+    let(:latlong) {{latitude: 35.0, longitude: 135.8}}
+    let(:ter_pattern) {
+      latlong.merge({
+          territory_id: Integer,
+          owner_id: user.id,
+          character_id: char.id,
+          radius: char.radius,
+          precision: char.precision,
+          expiration_date: wildcard_matcher,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          detection_count: Integer
+          # coordinate_id: Integer,
+        })
     }
 
     before do
-      @user = create(:user)
-      @character = create(:character)
-      @latitude = 35.0
-      @longitude = 135.8
-      @loc = create(:location)
-      @loc.update_attributes(:user => @user)
-      @user.add_territory(@latitude, @longitude, @character.id)
-      @user.add_territory(@latitude, @longitude, @character.id)
-      @params = {user_id: @user.id, token: @user.token}
-      get "/users/territories", @params
+      loc = create(:location)
+      user.locations << loc
+      2.times{
+        user.add_territory(latlong[:latitude], latlong[:longitude], char.id)
+      }
+      user.save
+      get "/users/territories", user_param
       @json = JSON.parse last_response.body
     end
 
     it_behaves_like "response"
-    it "テリトリー一覧取得" do
-      patterns = [pattern, pattern]
-      expect(last_response.body).to match_json_expression(patterns)
+    it_behaves_like "json" do
+      let(:pattern){ [ter_pattern] * 2 }
     end
   end
 

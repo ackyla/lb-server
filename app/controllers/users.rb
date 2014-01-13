@@ -28,7 +28,7 @@ Server::App.controllers :users do
   end
 
   get :territories, :provides => :json do
-    @user.my_territories.to_json
+    JSON.unparse @user.my_territories.map(&:to_hash)
   end
 
   get :notifications, :provides => :json do
