@@ -55,7 +55,7 @@ describe "TerritoriesController" do
 
     it "Detectionが取得できる" do
       json = JSON.parse last_response.body
-      expect(json["locations"].map{|l| l["id"]}).to include(loc.id)
+      expect(json["locations"].map{|l| l["location_id"]}).to include(loc.id)
     end
   end
 

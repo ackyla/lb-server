@@ -6,8 +6,8 @@ class Location < ActiveRecord::Base
 
   def to_hash
     hash = Hash[self.attributes]
-    hash[:location_id] = hash[:id]
-    hash.delete :id
+    hash[:location_id] = self.id
+    hash.delete "id"
     hash
   end
 end

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 PADRINO_ENV = 'test' unless defined?(PADRINO_ENV)
 require File.expand_path(File.dirname(__FILE__) + "/../config/boot")
-
+require 'json_expressions/rspec'
 require 'factory_girl'
 FactoryGirl.definition_file_paths = [
     File.join(Padrino.root, 'factories'),
@@ -41,11 +41,11 @@ if defined?(CarrierWave)
     klass.class_eval do
       def cache_dir
         "#{Padrino.root}/spec/support/uploads/tmp"
-      end 
-               
+      end
+
       def store_dir
         "#{Padrino.root}/spec/support/uploads/#{model.class.to_s.underscore}/#{mounted_as}/#{model.id}"
-      end 
+      end
     end
   end
 end

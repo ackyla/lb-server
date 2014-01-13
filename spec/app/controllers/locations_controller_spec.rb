@@ -31,9 +31,32 @@ describe "LocationsController" do
 
     it "ロケーションの生成" do
       json = JSON.parse last_response.body
-      expect(json["status"]).to eq("ok")
-      expect(loc).not_to be_nil
-      expect(@user.locations).to include(Location.find(json["location"]["id"]))
+      pattern = {
+        status: "ok",
+        user: {
+          user_id: @user.id,
+          token: wildcard_matcher,
+          name: @user.name,
+          gps_point: 501,
+          gps_point_limit: Integer,
+          level: Integer,
+          exp: Integer,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          avatar: /.*.jpg/
+        },
+        location: {
+          location_id: :location_id,
+          user_id: @user.id,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          coordinate_id: Integer,
+        }
+      }
+      expect(last_response.body).to match_json_expression(pattern)
+      matcher = JsonExpressions::Matcher.new(pattern)
+      matcher =~ JSON.parse(last_response.body)
+      expect(@user.locations).to include(Location.find(matcher.captures[:location_id]))
     end
 
     it "侵入状態の更新" do
@@ -71,7 +94,7 @@ describe "LocationsController" do
       it "2回目は失敗する" do
         json = JSON.parse last_response.body
         over_interval_time = (User::MINIMUM_TIME_INTERVAL + 10).seconds
-        loc = Location.find(json["location"]["id"])
+        loc = Location.find(json["location"]["location_id"])
         loc.update_attributes(created_at: DateTime.now - over_interval_time)
 
         ["ok", "failure"].each{|status|

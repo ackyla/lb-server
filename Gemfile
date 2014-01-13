@@ -20,8 +20,12 @@ gem 'activerecord', '>= 3.1', :require => 'active_record'
 gem 'sqlite3'
 
 # Test requirements
-gem 'rspec', :group => 'test'
-gem 'rack-test', :require => 'rack/test', :group => 'test'
+group :test do
+  gem 'rspec'
+  gem 'rack-test', :require => 'rack/test'
+  gem 'json_expressions'
+  gem 'factory_girl', '4.3.0'
+end
 
 # Padrino Stable Gem
 gem 'padrino', '0.11.4'
@@ -37,5 +41,5 @@ gem 'padrino', '0.11.4'
 gem 'mysql2'
 gem 'memcached'
 gem 'database_cleaner'
-gem 'factory_girl', '4.3.0', :group => 'test'
+
 gem 'carrierwave', :require => %w(carrierwave carrierwave/orm/activerecord)
