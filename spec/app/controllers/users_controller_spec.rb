@@ -127,6 +127,45 @@ describe "UsersController" do
     end
   end
 
+  describe "/users/territories" do
+    before do
+      @user = create(:user)
+      @character = create(:character)
+      @latitude = 35.0
+      @longitude = 135.8
+      @loc = create(:location)
+      @loc.update_attributes(:user => @user)
+      @user.add_territory(@latitude, @longitude, @character.id)
+      @user.add_territory(@latitude, @longitude, @character.id)
+      @params = {user_id: @user.id, token: @user.token}
+      get "/users/territories", @params
+      @json = JSON.parse last_response.body
+    end
+
+    it "status check" do
+      expect(last_response).to be_ok
+    end
+
+    it "テリトリー一覧取得" do
+      pattern = {
+        id: :territory_id,
+        radius: Float,
+        owner_id: @user.id,
+        character_id: @character.id,
+        expiration_date: wildcard_matcher,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
+        precision: Float,
+        detection_count: Integer,
+        coordinate_id: Integer,
+        latitude: @latitude,
+        longitude: @longitude
+      };
+      patterns = [pattern, pattern]
+      expect(@json).to match_json_expression(patterns)
+    end
+  end
+
   describe "/users/avatar" do
     before do
       @user = create(:user)
