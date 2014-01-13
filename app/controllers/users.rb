@@ -34,9 +34,9 @@ Server::App.controllers :users do
   get :notifications, :provides => :json do
     notifications =
       if not params[:all]
-        @user.notifications.undelivered.map{|n| n.notification_info}
+        @user.notifications.undelivered.map{|n| n.notification_info(:absolute_url => uri(n.detection.territory.owner.avatar.url))}
       else
-        @user.notifications.map{|n| n.notification_info}
+        @user.notifications.map{|n| n.notification_info(:absolute_url => uri(n.detection.territory.owner.avatar.url))}
       end
 
     JSON.unparse notifications

@@ -4,7 +4,7 @@ class Notification < ActiveRecord::Base
   scope :unread, conditions: {read: false}
   scope :undelivered, conditions: {delivered: false}
 
-  def notification_info
+  def notification_info(options=nil)
     if self.delivered == false
       self.delivered = true
       self.save
@@ -14,7 +14,7 @@ class Notification < ActiveRecord::Base
     when "entering"
       {
         location: self.detection.location.to_hash,
-        territory_owner: self.detection.territory.owner.to_hash
+        territory_owner: self.detection.territory.owner.to_hash(options)
       }
     when "detection"
       {territory: self.detection.territory.to_hash}
