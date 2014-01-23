@@ -41,7 +41,8 @@ describe "LocationsController" do
           user_id: user.id,
           created_at: wildcard_matcher,
           updated_at: wildcard_matcher,
-          coordinate_id: Integer,
+          latitude: Float,
+          longitude: Float
         }
       }
     }

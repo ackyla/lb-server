@@ -70,7 +70,7 @@ describe "UsersController" do
     it "JSONが正常" do
       ret = @json[0]
       %w(longitude latitude).each{|key|
-        expect(ret["location"][key]).to eq(@loc[key.to_sym])
+        expect(ret["location"][key]).to eq(@loc.to_hash[key.to_sym])
       }
       %w(user_id, name).each{|k|
         expect(ret["territory_owner"][k]).to eq(@user2[k.to_sym])

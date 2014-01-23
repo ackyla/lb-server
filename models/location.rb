@@ -8,6 +8,9 @@ class Location < ActiveRecord::Base
     hash = Hash[self.attributes]
     hash[:location_id] = self.id
     hash.delete "id"
+    hash[:latitude] = self.coordinate.lat
+    hash[:longitude] = self.coordinate.long
+    hash.delete "coordinate_id"
     hash
   end
 end
