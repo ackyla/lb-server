@@ -75,3 +75,29 @@ shared_examples_for "json" do
     should match_json_expression(pattern)
   end
 end
+
+shared_examples_for "404" do
+  let(:pattern) {{
+      message: "Not Found"
+    }
+  }
+
+  it "パラメータが足りないと404が返ってくる" do
+    expect(last_response.status).to eq(404)
+  end
+
+  it_behaves_like "json"
+end
+
+shared_examples_for "401" do
+  let(:pattern) {{
+      message: "Bad credentials"
+    }
+  }
+
+  it "認証できないと401が返ってくる" do
+    expect(last_response.status).to eq(401)
+  end
+
+  it_behaves_like "json"
+end

@@ -7,7 +7,6 @@ describe "UsersController" do
   let(:user_pattern) {
     {
       id: user.id,
-      token: wildcard_matcher,
       name: user.name,
       gps_point: Integer,
       gps_point_limit: Integer,
@@ -41,10 +40,27 @@ describe "UsersController" do
   end
 
   describe "#show" do
-    let(:pattern) { user_pattern }
-    before { get "/users/show", {user_id: user.id} }
-    it_behaves_like "response"
-    it_behaves_like "json"
+    describe "#valid_user_id" do
+      let(:pattern) { user_pattern }
+      before { get "/users/show", {user_id: user.id, token: user.token} }
+      it_behaves_like "response"
+      it_behaves_like "json"
+    end
+
+    describe "#parameter_not_found" do
+      before { get "/users/show" }
+      it_behaves_like "404"
+    end
+
+    describe "#invalid_user_id" do
+      before { get "/users/show", {user_id: 999, token: user.token} }
+      it_behaves_like "401"
+    end
+
+    describe "#invalid_token" do
+      before { get "/users/show", {user_id: user.id, token: "hogefugaga"} }
+      it_behaves_like "401"
+    end
   end
 
   describe "#notifications" do

@@ -66,17 +66,13 @@ module Server
       set :logging, true
     end
 
-    ##
-    # You can manage errors like:
-    #
-    #   error 404 do
-    #     render 'errors/404'
-    #   end
-    #
-    #   error 505 do
-    #     render 'errors/505'
-    #   end
-    #
+    error 401 do
+      {message: "Bad credentials"}.to_json
+    end
+
+    error 404 do
+      {message: "Not Found"}.to_json
+    end
 
     helpers do
       def error_message(code, message)
@@ -97,9 +93,9 @@ module Server
       end
 
       def login(params)
-        invalid_param_error unless params.key? "user_id" and params.key? "token"
+        halt 404 unless params.key? "user_id" and params.key? "token"
         @user = User.find_by_id_and_token(params[:user_id], params[:token])
-        error_message(200, "INVALID USER") unless @user
+        halt 401 unless @user
       end
     end
 

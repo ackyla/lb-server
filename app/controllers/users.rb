@@ -8,7 +8,7 @@ Server::App.controllers :users do
     end
   end
 
-  before :territories, :notifications, :locations, :avatar do
+  before :show, :territories, :notifications, :locations, :avatar do
     login(params)
   end
 
@@ -23,8 +23,7 @@ Server::App.controllers :users do
   end
 
   get :show, :provides => :json do
-    user = find_user(params)
-    user.to_json(:absolute_url => uri(user.avatar.url))
+    @user.to_json(:except => :token, :absolute_url => uri(@user.avatar.url))
   end
 
   get :territories, :provides => :json do
@@ -50,6 +49,6 @@ Server::App.controllers :users do
   post :avatar, :provides => :json do
     @user.avatar = params[:avatar]
     @user.save
-    @user.to_json(:absolute_url => uri(@user.avatar.url))
+    @user.to_json(:except => :token, :absolute_url => uri(@user.avatar.url))
   end
 end

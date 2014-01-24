@@ -60,9 +60,11 @@ class User < ActiveRecord::Base
   end
 
   def to_json(options=nil)
-    params = self.attributes
-    params["avatar"] = options && options[:absolute_url] ? options[:absolute_url] : self.avatar.url
-    ActiveSupport::JSON.encode(params, options)
+    params = JSON.parse ActiveSupport::JSON.encode(self, options)
+    if params["avatar"]
+      params["avatar"] = options && options[:absolute_url] ? options[:absolute_url] : self.avatar.url
+    end
+    ActiveSupport::JSON.encode(params, nil)
   end
 
   private
