@@ -19,24 +19,32 @@ describe "UsersController" do
   }
 
   describe "#create" do
-    let(:params) {{name: "user_1"}}
-    let(:pattern) {{
-        id: Integer,
-        token: wildcard_matcher,
-        name: params[:name],
-        gps_point: Integer,
-        gps_point_limit: Integer,
-        level: Integer,
-        exp: Integer,
-        created_at: wildcard_matcher,
-        updated_at: wildcard_matcher,
-        avatar: /http.*.(jpg|jpeg)/
+    describe "#valid_name" do
+      let(:params) {{name: "user_1"}}
+      let(:pattern) {{
+          id: Integer,
+          token: wildcard_matcher,
+          name: params[:name],
+          gps_point: Integer,
+          gps_point_limit: Integer,
+          level: Integer,
+          exp: Integer,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          avatar: /http.*.(jpg|jpeg)/
+        }
       }
-    }
+      
+      before { post "/users/create", params }
+      it_behaves_like "response"
+      it_behaves_like "json"
+    end
+    
+    describe "#parameter_not_found" do
+      before { post "/users/create" }
+      it_behaves_like "404"
+    end
 
-    before { post "/users/create", params }
-    it_behaves_like "response"
-    it_behaves_like "json"
   end
 
   describe "#show" do
