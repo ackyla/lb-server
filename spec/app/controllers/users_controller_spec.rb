@@ -45,6 +45,16 @@ describe "UsersController" do
       it_behaves_like "404"
     end
 
+    describe "#name_is_too_short" do
+      before { post "/users/create", {name: ""} }
+      it_behaves_like "422", 1
+    end
+
+    describe "#name_is_too_long" do
+      before { post "/users/create", {name: "1234567890123456789012345"} }
+      it_behaves_like "422", 1
+    end
+
   end
 
   describe "#show" do

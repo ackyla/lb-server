@@ -74,6 +74,13 @@ module Server
       {message: "Not Found"}.to_json
     end
 
+    error 422 do
+      {
+        message: "Unprocessable Entity",
+        errors: @errors.messages.map{|message| {:field => message[0], :messages => message[1]}}
+      }.to_json
+    end
+
     helpers do
       def error_message(code, message)
         content_type :json

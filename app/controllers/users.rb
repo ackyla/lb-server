@@ -18,8 +18,12 @@ Server::App.controllers :users do
   end
 
   post :create, :provides => :json do
-    halt 404 unless params[:name] && params[:name].length > 0
+    halt 404 unless params[:name]
     user = User.create(:name => params[:name])
+    if user.invalid?
+      @errors = user.errors
+      halt 422
+    end
     user.to_json(:absolute_url => uri(user.avatar_url))
   end
 

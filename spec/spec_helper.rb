@@ -76,6 +76,24 @@ shared_examples_for "json" do
   end
 end
 
+shared_examples_for "422" do |count|
+  let(:pattern) {{
+      message: "Unprocessable Entity",
+      errors: count.times.map{{
+          field: wildcard_matcher,
+          messages: wildcard_matcher
+        }
+      }
+    }
+  }
+  
+  it "バリデーションに引っかかると422が返ってくる" do
+    expect(last_response.status).to eq(422)
+  end
+
+  it_behaves_like "json"
+end
+
 shared_examples_for "404" do
   let(:pattern) {{
       message: "Not Found"

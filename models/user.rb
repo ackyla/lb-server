@@ -10,6 +10,10 @@ class User < ActiveRecord::Base
 
   mount_uploader :avatar, AvatarUploader
 
+  validates :name,
+  :presence => true,
+  :length => { :in => 1..20 }
+
   before_create do
     token = SecureRandom.base64(16)
     self.token = token
