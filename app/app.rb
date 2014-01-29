@@ -100,8 +100,10 @@ module Server
       end
 
       def login(params)
-        halt 404 unless params.key? "user_id" and params.key? "token"
-        @user = User.find_by_id_and_token(params[:user_id], params[:token])
+        halt 404 unless request.env["HTTP_AUTHORIZATION"]
+        key, token = request.env["HTTP_AUTHORIZATION"].split
+        halt 401 unless key and token and key == "token" and token.length > 0
+        @user = User.find_by_token(token)
         halt 401 unless @user
       end
     end

@@ -20,22 +20,12 @@ describe "UsersController" do
 
   describe "#create" do
     describe "#valid_name" do
-      let(:params) {{name: "user_1"}}
       let(:pattern) {{
-          id: Integer,
-          token: wildcard_matcher,
-          name: params[:name],
-          gps_point: Integer,
-          gps_point_limit: Integer,
-          level: Integer,
-          exp: Integer,
-          created_at: wildcard_matcher,
-          updated_at: wildcard_matcher,
-          avatar: /http.*.(jpg|jpeg)/
+          token: wildcard_matcher
         }
       }
       
-      before { post "/users/create", params }
+      before { post "/users/create", {name: "user_1"} }
       it_behaves_like "response"
       it_behaves_like "json"
     end
@@ -60,7 +50,7 @@ describe "UsersController" do
   describe "#show" do
     describe "#valid_user_id" do
       let(:pattern) { user_pattern }
-      before { get "/users/show", {user_id: user.id, token: user.token} }
+      before { get "/users/show", nil, token_auth_header(user.token) }
       it_behaves_like "response"
       it_behaves_like "json"
     end
@@ -70,13 +60,8 @@ describe "UsersController" do
       it_behaves_like "404"
     end
 
-    describe "#invalid_user_id" do
-      before { get "/users/show", {user_id: 999, token: user.token} }
-      it_behaves_like "401"
-    end
-
     describe "#invalid_token" do
-      before { get "/users/show", {user_id: user.id, token: "hogefugaga"} }
+      before { get "/users/show", nil, token_auth_header("hogerahogera") }
       it_behaves_like "401"
     end
   end
@@ -127,7 +112,7 @@ describe "UsersController" do
       before do
         det = Detection.create(location: loc, territory: ter)
         Notification.create(user: user, detection: det, notification_type: "entering")
-        get "/users/notifications", {user_id: user.id, token: user.token, all: true}
+        get "/users/notifications", {all: true}, token_auth_header(user.token)
       end
       it_behaves_like "response"
       it_behaves_like "json"
@@ -163,7 +148,7 @@ describe "UsersController" do
       before do
         det = Detection.create(location: loc, territory: ter)
         Notification.create(user: user2, detection: det, notification_type: "detection")
-        get "/users/notifications", {user_id: user2.id, token: user2.token, all: true}
+        get "/users/notifications", {all: true}, token_auth_header(user2.token)
       end
       it_behaves_like "response"
       it_behaves_like "json"
@@ -183,7 +168,7 @@ describe "UsersController" do
       @loc4 = create(:location)
       @loc4.update_attributes(:user => @user2)
 
-      get "/users/locations", user_param.merge({date: DateTime.now.strftime("%Y-%m-%dT00:00:00%Z")})
+      get "/users/locations", {date: DateTime.now.strftime("%Y-%m-%dT00:00:00%Z")}, token_auth_header(user.token)
       @json = JSON.parse last_response.body
     end
 
@@ -219,7 +204,7 @@ describe "UsersController" do
         user.add_territory(latlong[:latitude], latlong[:longitude], char.id)
       }
       user.save
-      get "/users/territories", user_param
+      get "/users/territories", nil, token_auth_header(user.token)
       @json = JSON.parse last_response.body
     end
 
@@ -227,16 +212,5 @@ describe "UsersController" do
     it_behaves_like "json" do
       let(:pattern){ [ter_pattern] * 2 }
     end
-  end
-
-  describe "#avatar" do
-    let(:pattern) { user_pattern }
-    let(:params) { user_param.merge({avatar: File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))}) }
-    before do
-      post "/users/avatar", params
-    end
-
-    it_behaves_like "response"
-    it_behaves_like "json"
   end
 end

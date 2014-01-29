@@ -64,6 +64,10 @@ def app(app = nil, &blk)
   @app ||= Padrino.application
 end
 
+def token_auth_header(token)
+  return {"HTTP_AUTHORIZATION" => "token #{token}"}
+end
+
 shared_examples_for "response" do
   subject { last_response }
   it{ should be_ok }

@@ -24,7 +24,7 @@ Server::App.controllers :users do
       @errors = user.errors
       halt 422
     end
-    user.to_json(:absolute_url => uri(user.avatar_url))
+    JSON.unparse({ token: user.token })
   end
 
   get :show, :provides => :json do

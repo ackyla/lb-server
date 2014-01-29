@@ -14,8 +14,6 @@ describe "LocationsController" do
 
     let(:params) {
       {
-        user_id: user.id,
-        token: user.token,
         latitude: loc.coordinate.lat,
         longitude: loc.coordinate.long
       }
@@ -54,7 +52,7 @@ describe "LocationsController" do
       @user2.my_territories << @ter
       @ter.save
       @user2.save
-      post "/locations/create", params
+      post "/locations/create", params, token_auth_header(user.token)
       user.reload
       @ter.reload
     end
@@ -81,7 +79,7 @@ describe "LocationsController" do
     describe "連続して#createした時" do
       before do
         @pre_point2 = user.gps_point
-        post "/locations/create", params
+        post "/locations/create", params, token_auth_header(user.token)
         user.reload
         @json = JSON.parse last_response.body
       end
@@ -105,7 +103,7 @@ describe "LocationsController" do
         loc.update_attributes(created_at: DateTime.now - over_interval_time)
 
         ["ok", "failure"].each{|status|
-          post "/locations/create", params
+          post "/locations/create", params, token_auth_header(user.token)
           user.reload
 
           expect(last_response).to be_ok

@@ -31,7 +31,6 @@ describe "TerritoriesController" do
       {
         latitude: loc.coordinate.lat,
         longitude: loc.coordinate.long,
-        user_id: user.id, token: user.token,
         character_id: char.id
       }
     }
@@ -54,7 +53,7 @@ describe "TerritoriesController" do
     }
 
     before do
-      post "/territories/create", params
+      post "/territories/create", params, token_auth_header(user.token)
       user.reload
       @json = JSON.parse last_response.body
     end
@@ -79,8 +78,8 @@ describe "TerritoriesController" do
       ter.save
       ter.reload
 
-      params = {id: ter.id, user_id: user.id, token: user.token}
-      get "/territories/detections", params
+      params = {id: ter.id}
+      get "/territories/detections", params, token_auth_header(user.token)
     end
 
     it_behaves_like "response"
@@ -95,13 +94,13 @@ describe "TerritoriesController" do
     let(:params) {
       {
         latitude: 0, longitude: 0,
-        id: ter.id, user_id: user.id, token: user.token
+        id: ter.id
       }
     }
 
     before do
       user.my_territories << ter
-      post "/territories/move", params
+      post "/territories/move", params, token_auth_header(user.token)
       ter.reload
     end
 
@@ -113,7 +112,7 @@ describe "TerritoriesController" do
   end
 
   describe "#supply" do
-    let(:params) { {user_id: user.id, token: user.token, id: ter.id, gps_point: 30} }
+    let(:params) { {id: ter.id, gps_point: 30} }
     let(:pattern) {
       {
         status: "ok",
@@ -137,7 +136,7 @@ describe "TerritoriesController" do
     before do
       user.my_territories << ter
       @expiration_date = ter.expiration_date
-      post "/territories/supply", params
+      post "/territories/supply", params, token_auth_header(user.token)
       ter.reload
     end
 

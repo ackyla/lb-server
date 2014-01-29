@@ -23,11 +23,9 @@ describe "NotificationsController" do
 
     before do
       params = {
-        user_id: user.id,
-        token: user.token,
         notification_id: notif.id
       }
-      post '/notifications/read', params
+      post '/notifications/read', params, token_auth_header(user.token)
       notif.reload
     end
 
