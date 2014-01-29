@@ -21,7 +21,9 @@ describe "UsersController" do
   describe "#create" do
     describe "#valid_name" do
       let(:pattern) {{
-          token: wildcard_matcher
+          id: Integer,
+          token: wildcard_matcher,
+          name: "user_1"
         }
       }
       

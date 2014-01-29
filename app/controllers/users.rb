@@ -24,7 +24,7 @@ Server::App.controllers :users do
       @errors = user.errors
       halt 422
     end
-    JSON.unparse({ token: user.token })
+    user.to_json(:only => [:id, :token, :name])
   end
 
   get :show, :provides => :json do
