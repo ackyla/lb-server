@@ -213,4 +213,14 @@ describe "UsersController" do
       let(:pattern){ [ter_pattern] * 2 }
     end
   end
+
+  describe "#avatar" do
+    let(:pattern) { user_pattern }
+    before do
+      post "/users/avatar", {avatar: File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))}, token_auth_header(user.token)
+    end
+    
+    it_behaves_like "response"
+    it_behaves_like "json"
+  end
 end
