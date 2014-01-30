@@ -8,6 +8,14 @@ begin
       t.pattern = "./spec/#{folder}/**/*_spec.rb"
       t.rspec_opts = %w(-fs --color)
     end
+
+    Dir["spec/#{folder}/**/*_spec.rb"].map {|d| File.basename(d) }.each do |file|
+      task_name = file.gsub(/(_controller_spec.rb|_spec.rb)$/, '')
+      RSpec::Core::RakeTask.new("spec:#{folder}:#{task_name}") do |t|
+        t.pattern = "./spec/#{folder}/**/#{file}"
+        t.rspec_opts = %w(-fs --color)
+      end
+    end
   end
 
   desc "Run complete application spec suite"
