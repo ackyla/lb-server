@@ -43,3 +43,5 @@ gem 'memcached'
 gem 'database_cleaner'
 
 gem 'carrierwave', :require => %w(carrierwave carrierwave/orm/activerecord)
+
+gem 'kaminari', '~> 0.15.0', :require => 'kaminari/sinatra'
