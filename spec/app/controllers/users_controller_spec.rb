@@ -50,20 +50,20 @@ describe "UsersController" do
   end
 
   describe "#show" do
-    describe "#valid_user_id" do
+    describe "#valid_token" do
       let(:pattern) { user_pattern }
-      before { get "/users/show", nil, token_auth_header(user.token) }
+      before { get "/user/show", nil, token_auth_header(user.token) }
       it_behaves_like "response"
       it_behaves_like "json"
     end
 
     describe "#parameter_not_found" do
-      before { get "/users/show" }
+      before { get "/user/show" }
       it_behaves_like "404"
     end
 
     describe "#invalid_token" do
-      before { get "/users/show", nil, token_auth_header("hogerahogera") }
+      before { get "/user/show", nil, token_auth_header("hogerahogera") }
       it_behaves_like "401"
     end
   end
@@ -114,7 +114,7 @@ describe "UsersController" do
       before do
         det = Detection.create(location: loc, territory: ter)
         Notification.create(user: user, detection: det, notification_type: "entering")
-        get "/users/notifications", {all: true}, token_auth_header(user.token)
+        get "/user/notifications", {all: true}, token_auth_header(user.token)
       end
       it_behaves_like "response"
       it_behaves_like "json"
@@ -150,7 +150,7 @@ describe "UsersController" do
       before do
         det = Detection.create(location: loc, territory: ter)
         Notification.create(user: user2, detection: det, notification_type: "detection")
-        get "/users/notifications", {all: true}, token_auth_header(user2.token)
+        get "/user/notifications", {all: true}, token_auth_header(user2.token)
       end
       it_behaves_like "response"
       it_behaves_like "json"
@@ -170,7 +170,7 @@ describe "UsersController" do
       @loc4 = create(:location)
       @loc4.update_attributes(:user => @user2)
 
-      get "/users/locations", {date: DateTime.now.strftime("%Y-%m-%dT00:00:00%Z")}, token_auth_header(user.token)
+      get "/user/locations", {date: DateTime.now.strftime("%Y-%m-%dT00:00:00%Z")}, token_auth_header(user.token)
       @json = JSON.parse last_response.body
     end
 
@@ -184,19 +184,30 @@ describe "UsersController" do
   describe "#territories" do
     let(:char) {create(:character)}
     let(:latlong) {{latitude: 35.0, longitude: 135.8}}
-    let(:ter_pattern) {
-      latlong.merge({
-          territory_id: Integer,
-          owner_id: user.id,
-          character_id: char.id,
-          radius: char.radius,
-          precision: char.precision,
-          expiration_date: wildcard_matcher,
-          created_at: wildcard_matcher,
-          updated_at: wildcard_matcher,
-          detection_count: Integer
-          # coordinate_id: Integer,
-        })
+    let(:pattern) {{
+        previous_page: 0,
+        next_page: 0,
+        has_more: false,
+        territories: 2.times.map{{
+            id: Integer,
+            character: {
+              id: char.id,
+              name: char.name,
+              distance: char.distance
+            },
+            radius: char.radius,
+            precision: char.precision,
+            detection_count: Integer,
+            coordinate: {
+              lat: latlong[:latitude],
+              long: latlong[:longitude]
+            },
+            expiration_date: wildcard_matcher,
+            created_at: wildcard_matcher,
+            updated_at: wildcard_matcher,
+          }
+        }
+      }
     }
 
     before do
@@ -206,20 +217,17 @@ describe "UsersController" do
         user.add_territory(latlong[:latitude], latlong[:longitude], char.id)
       }
       user.save
-      get "/users/territories", nil, token_auth_header(user.token)
-      @json = JSON.parse last_response.body
+      get "/user/territories", nil, token_auth_header(user.token)
     end
 
     it_behaves_like "response"
-    it_behaves_like "json" do
-      let(:pattern){ [ter_pattern] * 2 }
-    end
+    it_behaves_like "json"
   end
 
   describe "#avatar" do
     let(:pattern) { user_pattern }
     before do
-      post "/users/avatar", {avatar: File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))}, token_auth_header(user.token)
+      post "/user/avatar", {avatar: File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))}, token_auth_header(user.token)
     end
     
     it_behaves_like "response"

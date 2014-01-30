@@ -1,15 +1,13 @@
 Server::App.controllers :users do
-  helpers do
-    def find_user(params)
-      invalid_param_error unless params.key? "user_id"
-      user = User.find_by_id(params[:user_id])
-      error_message(201, "USER NOT FOUND") unless user
-      return user
-    end
-  end
 
   before :show, :territories, :notifications, :locations, :avatar do
     login(params)
+  end
+
+  before :territories do
+    @all = params[:all] ? true : false
+    @page = (params[:page] and params[:page].to_i > 0) ? params[:page] : 1
+    @per = (params[:per] and params[:per].to_i > 0) ? params[:per] : 30
   end
 
   get :create do
@@ -27,15 +25,34 @@ Server::App.controllers :users do
     user.to_json(:only => [:id, :token, :name])
   end
 
-  get :show, :provides => :json do
+  get :show, :map => "/user/show", :provides => :json do
     @user.to_json(:except => :token, :absolute_url => uri(@user.avatar.url))
   end
 
-  get :territories, :provides => :json do
-    JSON.unparse @user.my_territories.map(&:to_hash)
+  get :territories, :map => "/user/territories", :provides => :json do
+    territories = @user.my_territories
+    territories = territories.page(@page).per(@per) if !@all
+
+    previous_page = (!@all and territories.prev_page) ? territories.prev_page : 0 
+    next_page = (!@all and territories.next_page) ? territories.next_page : 0
+    has_more = (!@all and territories.last_page?) ? false : true
+
+    territories = territories.map{|t|
+      obj = JSON.parse(t.to_json(:only => [:id, :radius, :precision, :detection_count, :expiration_date, :created_at, :updated_at]))
+      obj["character"] = JSON.parse(t.character.to_json(:only => [:id, :name, :distance]))
+      obj["coordinate"] = JSON.parse(t.coordinate.to_json(:only => [:lat, :long]))
+      obj
+    }
+
+    {
+      previous_page: previous_page,
+      next_page: next_page,
+      has_more: has_more,
+      territories: territories
+    }.to_json
   end
 
-  get :notifications, :provides => :json do
+  get :notifications, :map => "/user/notifications", :provides => :json do
     notifications =
       if not params[:all]
         @user.notifications.undelivered.map{|n| n.notification_info(:absolute_url => uri(n.detection.territory.owner.avatar.url))}
@@ -46,12 +63,12 @@ Server::App.controllers :users do
     JSON.unparse notifications
   end
 
-  get :locations, :provides => :json do
+  get :locations, :map => "/user/locations", :provides => :json do
     locations = Location.where("user_id = ? AND created_at >= ? AND created_at < ?", @user.id, Date.parse(params[:date]), Date.parse(params[:date])+1)
     locations.to_json
   end
 
-  post :avatar, :provides => :json do
+  post :avatar, :map => "/user/avatar", :provides => :json do
     @user.avatar = params[:avatar]
     @user.save
     @user.to_json(:except => :token, :absolute_url => uri(@user.avatar.url))
