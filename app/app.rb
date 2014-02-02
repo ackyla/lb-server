@@ -81,6 +81,10 @@ module Server
       }.to_json
     end
 
+    before do
+      pager
+    end
+
     helpers do
       def error_message(code, message)
         content_type :json
@@ -99,12 +103,17 @@ module Server
         {status: "ok"}.merge(opt)
       end
 
-      def login(params)
+      def login(params=nil)
         halt 404 unless request.env["HTTP_AUTHORIZATION"]
         key, token = request.env["HTTP_AUTHORIZATION"].split
         halt 401 unless key and token and key == "token" and token.length > 0
         @user = User.find_by_token(token)
         halt 401 unless @user
+      end
+
+      def pager
+        @page = (params[:page] and params[:page].to_i > 0) ? params[:page] : 1
+        @per = (params[:per] and params[:per].to_i > 0) ? params[:per] : 30
       end
     end
 

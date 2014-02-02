@@ -1,13 +1,11 @@
 Server::App.controllers :users do
 
   before :show, :territories, :notifications, :locations, :avatar do
-    login(params)
+    login
   end
 
   before :territories do
     @all = params[:all] ? true : false
-    @page = (params[:page] and params[:page].to_i > 0) ? params[:page] : 1
-    @per = (params[:per] and params[:per].to_i > 0) ? params[:per] : 30
   end
 
   get :create do
