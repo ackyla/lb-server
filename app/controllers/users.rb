@@ -53,7 +53,7 @@ Server::App.controllers :users do
   end
 
   get :notifications, :map => "/user/notifications", :provides => :json do
-    notifications = @user.notifications
+    notifications = @user.notifications.order(Notification.arel_table[:created_at].desc)
     notifications = notifications.page(@page).per(@per)
 
     previous_page = notifications.prev_page ? notifications.prev_page : 0
