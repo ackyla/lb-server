@@ -69,47 +69,47 @@ describe "UsersController" do
   end
 
   describe "#notifications" do
+    let(:char) {create(:character)}
     let(:user2) { create(:user2) }
     let(:loc) { create(:location, :user_id => user2.id) }
-    let(:ter) { create(:territory, :owner_id => user2.id) }
+    let(:ter) { create(:territory, :owner_id => user2.id, :character_id => char.id) }
 
     before do
       user2.reload
     end
 
     describe "#entering" do
-      let(:pattern) {
-        [{
-           notification_id: Integer,
-           notification_type: "entering",
-           user_id: 1,
-           detection_id: Integer,
-           created_at: wildcard_matcher,
-           updated_at: wildcard_matcher,
-           delivered: true,
-           read: false,
-           location: {
-             location_id: Integer,
-             user_id: 2,
+      let(:pattern) {{
+          previous_page: 0,
+          next_page: 0,
+          has_more: false,
+          notifications:
+          [{
+             id: Integer,
+             notification_type: "entering",
              created_at: wildcard_matcher,
              updated_at: wildcard_matcher,
-             latitude: Float,
-             longitude: Float
-           },
-           territory_owner: {
-             user_id: 2,
-             token: wildcard_matcher,
-             name: wildcard_matcher,
-             exp: Integer,
-             level: Integer,
-             gps_point: Integer,
-             gps_point_limit: Integer,
-             avatar: /http.*.(jpg|jpeg)/,
-             created_at: wildcard_matcher,
-             updated_at: wildcard_matcher
+             read: false,
+             location: {
+               id: Integer,
+               created_at: wildcard_matcher,
+               updated_at: wildcard_matcher,
+               coordinate: {
+                 lat: Float,
+                 long: Float
+               }
+             },
+             territory_owner: {
+               id: 2,
+               name: wildcard_matcher,
+               level: Integer,
+               avatar: /http.*.(jpg|jpeg)/,
+               created_at: wildcard_matcher,
+               updated_at: wildcard_matcher
+             }
            }
-         }
-        ]
+          ]
+        }
       }
       before do
         det = Detection.create(location: loc, territory: ter)
@@ -121,31 +121,35 @@ describe "UsersController" do
     end
 
     describe "#detection" do
-      let(:pattern) {
-        [{
-           notification_id: Integer,
-           notification_type: "detection",
-           user_id: 2,
-           detection_id: Integer,
-           delivered: true,
-           read: false,
-           territory: {
-             territory_id: 1,
-             owner_id: 2,
-             character_id: Integer,
-             precision: Float,
-             radius: Float,
-             detection_count: Integer,
-             expiration_date: wildcard_matcher,
+      let(:pattern) {{
+          previous_page: 0,
+          next_page: 0,
+          has_more: false,
+          notifications:
+          [{
+             id: Integer,
+             notification_type: "detection",
+             read: false,
+             territory: {
+               id: Integer,
+               character: {
+                 id: char.id,
+                 name: char.name
+               },
+               detection_count: Integer,
+               coordinate: {
+                 lat: Float,
+                 long: Float
+               },
+               expiration_date: wildcard_matcher,
+               created_at: wildcard_matcher,
+               updated_at: wildcard_matcher,
+             },
              created_at: wildcard_matcher,
-             updated_at: wildcard_matcher,
-             latitude: Float,
-             longitude: Float
-           },
-           created_at: wildcard_matcher,
-           updated_at: wildcard_matcher
-         }
-        ]
+             updated_at: wildcard_matcher
+           }
+          ]
+        }
       }
       before do
         det = Detection.create(location: loc, territory: ter)

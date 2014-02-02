@@ -14,8 +14,8 @@ describe "LocationsController" do
 
     let(:params) {
       {
-        latitude: loc.coordinate.lat,
-        longitude: loc.coordinate.long
+        lat: loc.coordinate.lat,
+        long: loc.coordinate.long
       }
     }
 

@@ -53,6 +53,36 @@ Server::App.controllers :users do
   end
 
   get :notifications, :map => "/user/notifications", :provides => :json do
+    notifications = @user.notifications
+    notifications = notifications.page(@page).per(@per)
+
+    previous_page = notifications.prev_page ? notifications.prev_page : 0
+    next_page = notifications.next_page ? notifications.next_page : 0
+    has_more = notifications.last_page? ? false : true
+
+    notifications = notifications.map{|n|
+      n.deliver
+      if n.notification_type == "entering"
+        hash = JSON.parse(n.to_json(:only => [:id, :notification_type, :created_at, :updated_at, :read]))
+        loc_hash = JSON.parse(n.detection.location.to_json(:only => [:id, :created_at, :updated_at]))
+        coor_hash = JSON.parse(n.detection.location.coordinate.to_json(:only => [:lat, :long]))
+        loc_hash["coordinate"] = coor_hash
+        own_hash = JSON.parse(n.detection.territory.owner.to_json(:only => [:id, :name, :level, :created_at, :updated_at, :avatar], :absolute_url => uri(n.detection.territory.owner.avatar.url, true, false)))
+        hash["location"] = loc_hash
+        hash["territory_owner"] = own_hash
+      else
+        hash = JSON.parse(n.to_json(:only => [:id, :notification_type, :created_at, :updated_at, :read]))
+        ter_hash = JSON.parse(n.detection.territory.to_json(:only => [:id, :detection_count, :expiration_date, :created_at, :updated_at]))
+        char_hash = JSON.parse(n.detection.territory.character.to_json(:only => [:id, :name]))
+        coor_hash = JSON.parse(n.detection.territory.coordinate.to_json(:only => [:lat, :long]))
+        ter_hash["character"] = char_hash
+        ter_hash["coordinate"] = coor_hash
+        hash["territory"] = ter_hash
+      end
+      hash
+    }
+
+=begin
     notifications =
       if not params[:all]
         @user.notifications.undelivered.map{|n| n.notification_info(:absolute_url => uri(n.detection.territory.owner.avatar.url))}
@@ -61,6 +91,14 @@ Server::App.controllers :users do
       end
 
     JSON.unparse notifications
+=end
+
+    {
+      previous_page: previous_page,
+      next_page: next_page,
+      has_more: has_more,
+      notifications: notifications
+    }.to_json
   end
 
   get :locations, :map => "/user/locations", :provides => :json do

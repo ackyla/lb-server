@@ -4,6 +4,10 @@ class Notification < ActiveRecord::Base
   scope :unread, conditions: {read: false}
   scope :undelivered, conditions: {delivered: false}
 
+  def deliver
+    self.update_attributes(:delivered => true) if self.delivered == false
+  end
+
   def notification_info(options=nil)
     if self.delivered == false
       self.delivered = true

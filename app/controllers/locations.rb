@@ -1,7 +1,7 @@
 Server::App.controllers :locations do
   post :create, :provides => :json do
     login(params)
-    coord = Coordinate.find_or_create(lat: params[:latitude], long: params[:longitude])
+    coord = Coordinate.find_or_create(lat: params[:lat], long: params[:long])
     loc = Location.new(coordinate: coord)
     if @user.add_location(loc)
       ters = Territory.actives.where("owner_id != ?", @user.id).select{|ter|
