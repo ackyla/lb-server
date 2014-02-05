@@ -120,7 +120,6 @@ Server::App.controllers :users do
         pre = c.id
       end
     }
-    p locations_array
     locations_array.to_json
   end
 
