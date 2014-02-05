@@ -162,27 +162,47 @@ describe "UsersController" do
   end
 
   describe "#locations" do
+    let(:user2) { create(:user2) }
+    let(:loc) { create(:location, :created_at => DateTime.now-20.minutes, :coordinate => Coordinate.find_or_create(lat: 34.0, long: 125.0)) }
+    let(:loc2) { create(:location, :created_at => DateTime.now-10.minutes) }
+    let(:loc3) { create(:location, :created_at => DateTime.now-3.minutes) }
+    let(:loc4) { create(:location) }
+    let(:loc5) { create(:location) }
+
+    let(:pattern) {
+      [{
+         id: Integer,
+         coordinate: {
+           lat: loc.coordinate.lat,
+           long: loc.coordinate.long
+         },
+         created_at: wildcard_matcher,
+         updated_at: wildcard_matcher
+       },
+       {
+         id: Integer,
+         coordinate: {
+           lat: loc2.coordinate.lat,
+           long: loc2.coordinate.long
+         },
+         created_at: wildcard_matcher,
+         updated_at: wildcard_matcher
+       }
+      ]
+    }
+
     before do
-      @user2 = create(:user2)
-      @loc1 = create(:location)
-      @loc1.update_attributes(:user => user)
-      @loc2 = create(:location2)
-      @loc2.update_attributes(:user => user)
-      @loc3 = create(:location)
-      @loc3.update_attributes(:user => user, :created_at => (DateTime.now-1))
+      user.add_location(loc)
+      user.add_location(loc2)
+      user.add_location(loc3)
+      user.add_location(loc4)
+      user2.add_location(loc5)
 
-      @loc4 = create(:location)
-      @loc4.update_attributes(:user => @user2)
-
-      get "/user/locations", {date: DateTime.now.strftime("%Y-%m-%dT00:00:00%Z")}, token_auth_header(user.token)
-      @json = JSON.parse last_response.body
+      get "/user/locations", {date: (DateTime.now-1.hour).strftime("%Y-%m-%dT%H:%M:%S%Z")}, token_auth_header(user.token)
     end
 
     it_behaves_like "response"
-
-    it "長さが2" do
-      expect(@json.length).to eq(2)
-    end
+    it_behaves_like "json"
   end
 
   describe "#territories" do

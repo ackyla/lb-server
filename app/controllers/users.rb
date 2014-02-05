@@ -100,8 +100,28 @@ Server::App.controllers :users do
   end
 
   get :locations, :map => "/user/locations", :provides => :json do
-    locations = Location.where("user_id = ? AND created_at >= ? AND created_at < ?", @user.id, Date.parse(params[:date]), Date.parse(params[:date])+1)
-    locations.to_json
+    halt 404 unless params[:date]
+    begin
+      date = Date.parse(params[:date])
+    rescue
+      halt 404
+    end
+    
+    locations = Location.where("user_id = ? AND created_at >= ? AND created_at < ?", @user.id, date, date+1)
+
+    pre = 0
+    locations_array = Array.new
+    locations.each{|l|
+      c = l.coordinate
+      if c.id != pre
+        l_hash = JSON.parse(l.to_json(:only => [:id, :created_at, :updated_at]))
+        l_hash["coordinate"] = JSON.parse(c.to_json(:only => [:lat, :long]))
+        locations_array.append(l_hash)
+        pre = c.id
+      end
+    }
+    p locations_array
+    locations_array.to_json
   end
 
   post :avatar, :map => "/user/avatar", :provides => :json do
