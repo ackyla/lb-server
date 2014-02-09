@@ -36,9 +36,9 @@ describe "TerritoriesController" do
     }
     let(:pattern) {
       {
-        user: {
-          user_id: user.id,
-          token: wildcard_matcher,
+        id: :territory_id,
+        owner: {
+          id: user.id,
           name: user.name,
           gps_point: 401,
           gps_point_limit: Integer,
@@ -48,7 +48,21 @@ describe "TerritoriesController" do
           updated_at: wildcard_matcher,
           avatar: /http.*.(jpg|jpeg)/
         },
-        territory: ter_pattern
+        character: {
+          id: char.id,
+          name: char.name,
+          distance: char.distance
+        },
+        coordinate: {
+          lat: Float,
+          long: Float,
+        },
+        precision: Float,
+        radius: Float,
+        detection_count: Integer,
+        expiration_date: wildcard_matcher,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
       }
     }
 

@@ -11,8 +11,17 @@ Server::App.controllers :territories do
 
   post :create, :provides => :json do
     ter = @user.add_territory(params[:latitude], params[:longitude], params[:character_id])
-    res = {territory: ter.to_hash, user: ter.owner.to_hash(:absolute_url => uri(@user.avatar.url))}
-    JSON.unparse(res)
+    if ter.invalid?
+      @errors = ter.errors
+      halt 422
+    end
+
+    territory_hash = JSON.parse(ter.to_json(:only => [:id, :precision, :radius, :detection_count, :expiration_date, :created_at, :updated_at]))
+    territory_hash["owner"] = JSON.parse(ter.owner.to_json(:only => [:id, :name, :gps_point, :gps_point_limit, :level, :exp, :avatar, :created_at, :updated_at], :absolute_url => uri(ter.owner.avatar.url, true, false)))
+    territory_hash["character"] = JSON.parse(ter.character.to_json(:only => [:id, :name, :distance]))
+    territory_hash["coordinate"] = JSON.parse(ter.coordinate.to_json(:only => [:lat, :long]))
+
+    territory_hash.to_json
   end
 
   post :destroy, :provides => :json do
