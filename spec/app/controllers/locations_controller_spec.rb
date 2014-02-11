@@ -14,17 +14,16 @@ describe "LocationsController" do
 
     let(:params) {
       {
-        lat: loc.coordinate.lat,
-        long: loc.coordinate.long
+        latitude: loc.coordinate.lat,
+        longitude: loc.coordinate.long
       }
     }
 
     let(:pattern) {
       {
-        status: "ok",
+        id: :location_id,
         user: {
-          user_id: user.id,
-          token: wildcard_matcher,
+          id: user.id,
           name: user.name,
           gps_point: 501,
           gps_point_limit: Integer,
@@ -34,14 +33,12 @@ describe "LocationsController" do
           updated_at: wildcard_matcher,
           avatar: /http.*.(jpg|jpeg)/
         },
-        location: {
-          location_id: :location_id,
-          user_id: user.id,
-          created_at: wildcard_matcher,
-          updated_at: wildcard_matcher,
-          latitude: Float,
-          longitude: Float
-        }
+        coordinate: {
+          lat: Float,
+          long: Float
+        },
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher
       }
     }
     before do
@@ -84,33 +81,10 @@ describe "LocationsController" do
         @json = JSON.parse last_response.body
       end
 
-      it_behaves_like "response"
-
-      it "ステータスがfailure" do
-        expect(@json["status"]).to eq("failure")
-      end
+      it_behaves_like "422", 1
 
       it "陣力が増加しない" do
         expect(user.gps_point).to eq(@pre_point2)
-      end
-    end
-
-    describe "更新時間間隔内での連続post" do
-      it "2回目は失敗する" do
-        json = JSON.parse last_response.body
-        over_interval_time = (User::MINIMUM_TIME_INTERVAL + 10).seconds
-        loc = Location.find(json["location"]["location_id"])
-        loc.update_attributes(created_at: DateTime.now - over_interval_time)
-
-        ["ok", "failure"].each{|status|
-          post "/locations/create", params, token_auth_header(user.token)
-          user.reload
-
-          expect(last_response).to be_ok
-          json = JSON.parse last_response.body
-          expect(json["status"]).to eq(status)
-          expect(user.locations.all.size).to eq(2)
-        }
       end
     end
   end

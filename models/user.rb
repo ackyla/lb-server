@@ -6,7 +6,6 @@ class User < ActiveRecord::Base
   has_many :invasions, dependent: :destroy
   has_many :enemy_territories, class_name: "Territory", through: :invasions, source: :territory
   has_many :notifications, dependent: :destroy
-  MINIMUM_TIME_INTERVAL = 300
 
   mount_uploader :avatar, AvatarUploader
 
@@ -33,12 +32,8 @@ class User < ActiveRecord::Base
   end
 
   def add_location(loc)
-    recent_location = locations.order('created_at desc').first
-    if recent_location
-      time_interval = Time.now - recent_location.created_at
-      return if time_interval < MINIMUM_TIME_INTERVAL
-    end
     locations << loc
+    return if loc.invalid?
     self.gps_point += 1 if self.gps_point < self.gps_point_limit
     save
   end
@@ -80,4 +75,5 @@ class User < ActiveRecord::Base
     self.gps_point = self.gps_point_limit
     self.level = self.exp / 100 + 1
   end
+
 end
