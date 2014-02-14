@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 Server::App.controllers :territories do
   before :create do
-    login(params)
+    login
   end
 
   before :destroy, :locations, :supply, :move, :detections do
-    login(params)
-    @territory = @user.my_territories.find(params[:id])
+    login
+    @territory = @user.my_territories.find_by_id(params[:id])
+    halt 404 unless @territory
   end
 
   post :create, :provides => :json do
@@ -43,10 +44,16 @@ Server::App.controllers :territories do
   end
 
   post :supply, provides: :json do
-    return status_failure "GPSポイントが指定されていません." unless params[:gps_point]
+    halt 500 unless params[:gps_point]
     point = params[:gps_point].to_i
-    return status_failure unless @territory.supply point
-    return JSON.unparse(status_ok({supplied_point: point, territory: @territory.to_hash, user: @user.reload.to_hash(:absolute_url => uri(@user.avatar.url))}))
+    halt 500 unless @territory.supply point
+
+    territory_hash = JSON.parse(@territory.to_json(:only => [:id, :precision, :radius, :detection_count, :expiration_date, :created_at, :updated_at]))
+    territory_hash["owner"] = JSON.parse(@territory.owner.to_json(:only => [:id, :name, :gps_point, :gps_point_limit, :level, :exp, :avatar, :created_at, :updated_at], :absolute_url => uri(@territory.owner.avatar.url, true, false)))
+    territory_hash["character"] = JSON.parse(@territory.character.to_json(:only => [:id, :name, :distance]))
+    territory_hash["coordinate"] = JSON.parse(@territory.coordinate.to_json(:only => [:lat, :long]))
+
+    territory_hash.to_json
   end
 
   post :move, provides: :json do

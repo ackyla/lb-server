@@ -13,6 +13,9 @@ class User < ActiveRecord::Base
   :presence => true,
   :length => { :in => 1..20 }
 
+  validates :gps_point,
+  :numericality => { :greater_than_or_equal_to => 0, :less_than_or_equal_to => :gps_point_limit }
+
   before_create do
     token = SecureRandom.base64(16)
     self.token = token
@@ -39,8 +42,8 @@ class User < ActiveRecord::Base
   end
 
   def use_point(point)
-    return false if point > self.gps_point
-    self.gps_point -= point
+    return false if point.to_i < 1
+    self.gps_point -= point.to_i
     save
   end
 

@@ -127,13 +127,12 @@ describe "TerritoriesController" do
 
   describe "#supply" do
     let(:params) { {id: ter.id, gps_point: 30} }
+
     let(:pattern) {
       {
-        status: "ok",
-        supplied_point: Integer,
-        user: {
-          user_id: user.id,
-          token: wildcard_matcher,
+        id: :territory_id,
+        owner: {
+          id: user.id,
           name: user.name,
           gps_point: 471,
           gps_point_limit: Integer,
@@ -143,7 +142,21 @@ describe "TerritoriesController" do
           updated_at: wildcard_matcher,
           avatar: /http.*.(jpg|jpeg)/
         },
-        territory: ter_pattern
+        character: {
+          id: ter.character.id,
+          name: ter.character.name,
+          distance: ter.character.distance
+        },
+        coordinate: {
+          lat: Float,
+          long: Float,
+        },
+        precision: Float,
+        radius: Float,
+        detection_count: Integer,
+        expiration_date: wildcard_matcher,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
       }
     }
 

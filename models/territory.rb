@@ -43,7 +43,7 @@ class Territory < ActiveRecord::Base
   end
 
   def supply(point)
-    return unless owner.use_point point
+    return false unless owner.use_point point
     now = DateTime.now
     inc_time = (point * 10).minutes
     if self.expiration_date < now
@@ -57,4 +57,5 @@ class Territory < ActiveRecord::Base
   def within_range(coord)
     coord.distance(self.coordinate) < self.character.distance
   end
+
 end
