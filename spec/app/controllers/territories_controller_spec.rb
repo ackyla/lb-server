@@ -112,6 +112,38 @@ describe "TerritoriesController" do
       }
     }
 
+    let(:pattern) {
+      {
+        id: :territory_id,
+        owner: {
+          id: user.id,
+          name: user.name,
+          gps_point: user.gps_point,
+          gps_point_limit: Integer,
+          level: Integer,
+          exp: Integer,
+          created_at: wildcard_matcher,
+          updated_at: wildcard_matcher,
+          avatar: /http.*.(jpg|jpeg)/
+        },
+        character: {
+          id: ter.character.id,
+          name: ter.character.name,
+          distance: ter.character.distance
+        },
+        coordinate: {
+          lat: params[:latitude],
+          long: params[:longitude],
+        },
+        precision: Float,
+        radius: Float,
+        detection_count: Integer,
+        expiration_date: wildcard_matcher,
+        created_at: wildcard_matcher,
+        updated_at: wildcard_matcher,
+      }
+    }
+
     before do
       user.my_territories << ter
       post "/territories/move", params, token_auth_header(user.token)
@@ -119,6 +151,7 @@ describe "TerritoriesController" do
     end
 
     it_behaves_like "response"
+    it_behaves_like "json"
     it "テリトリーが移動する" do
       expect(ter.coordinate.lat).to eq(params[:latitude])
       expect(ter.coordinate.long).to eq(params[:longitude])

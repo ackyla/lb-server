@@ -60,6 +60,12 @@ Server::App.controllers :territories do
     coord = Coordinate.find_or_create(lat: params[:latitude], long: params[:longitude])
     @territory.coordinate = coord
     @territory.save
-    @territory.to_json
+
+    territory_hash = JSON.parse(@territory.to_json(:only => [:id, :precision, :radius, :detection_count, :expiration_date, :created_at, :updated_at]))
+    territory_hash["owner"] = JSON.parse(@territory.owner.to_json(:only => [:id, :name, :gps_point, :gps_point_limit, :level, :exp, :avatar, :created_at, :updated_at], :absolute_url => uri(@territory.owner.avatar.url, true, false)))
+    territory_hash["character"] = JSON.parse(@territory.character.to_json(:only => [:id, :name, :distance]))
+    territory_hash["coordinate"] = JSON.parse(@territory.coordinate.to_json(:only => [:lat, :long]))
+
+    territory_hash.to_json
   end
 end
