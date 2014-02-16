@@ -28,7 +28,7 @@ Server::App.controllers :users do
   end
 
   get :territories, :map => "/user/territories", :provides => :json do
-    territories = @user.my_territories
+    territories = @user.my_territories.order(Territory.arel_table[:updated_at].desc)
     territories = territories.page(@page).per(@per) if !@all
 
     previous_page = (!@all and territories.prev_page) ? territories.prev_page : 0 
