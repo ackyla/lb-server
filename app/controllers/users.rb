@@ -60,24 +60,20 @@ Server::App.controllers :users do
 
     notifications = notifications.map{|n|
       n.deliver
+      notification_hash = JSON.parse(n.to_json(:only => [:id, :notification_type, :created_at, :updated_at, :read]))
       if n.notification_type == "entering"
-        hash = JSON.parse(n.to_json(:only => [:id, :notification_type, :created_at, :updated_at, :read]))
         loc_hash = JSON.parse(n.detection.location.to_json(:only => [:id, :created_at, :updated_at]))
-        coor_hash = JSON.parse(n.detection.location.coordinate.to_json(:only => [:lat, :long]))
-        loc_hash["coordinate"] = coor_hash
-        own_hash = JSON.parse(n.detection.territory.owner.to_json(:only => [:id, :name, :level, :created_at, :updated_at, :avatar], :absolute_url => uri(n.detection.territory.owner.avatar.url, true, false)))
-        hash["location"] = loc_hash
-        hash["territory_owner"] = own_hash
+        loc_hash["coordinate"] = JSON.parse(n.detection.location.coordinate.to_json(:only => [:lat, :long]))
+        notification_hash["location"] = loc_hash
+        notification_hash["territory_owner"] = JSON.parse(n.detection.territory.owner.to_json(:only => [:id, :name, :level, :created_at, :updated_at, :avatar], :absolute_url => uri(n.detection.territory.owner.avatar.url, true, false)))
       else
         hash = JSON.parse(n.to_json(:only => [:id, :notification_type, :created_at, :updated_at, :read]))
-        ter_hash = JSON.parse(n.detection.territory.to_json(:only => [:id, :detection_count, :expiration_date, :created_at, :updated_at]))
-        char_hash = JSON.parse(n.detection.territory.character.to_json(:only => [:id, :name]))
-        coor_hash = JSON.parse(n.detection.territory.coordinate.to_json(:only => [:lat, :long]))
-        ter_hash["character"] = char_hash
-        ter_hash["coordinate"] = coor_hash
-        hash["territory"] = ter_hash
+        territory_hash = JSON.parse(n.detection.territory.to_json(:only => [:id, :precision, :radius, :detection_count, :expiration_date, :created_at, :updated_at]))
+        territory_hash["character"] = JSON.parse(n.detection.territory.character.to_json(:only => [:id, :name, :distance]))
+        territory_hash["coordinate"] = JSON.parse(n.detection.territory.coordinate.to_json(:only => [:lat, :long]))
+        notification_hash["territory"] = territory_hash
       end
-      hash
+      notification_hash
     }
 
 =begin

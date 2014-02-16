@@ -134,13 +134,16 @@ describe "UsersController" do
                id: Integer,
                character: {
                  id: char.id,
-                 name: char.name
+                 name: char.name,
+                 distance: char.distance
                },
                detection_count: Integer,
                coordinate: {
                  lat: Float,
                  long: Float
                },
+               precision: Float,
+               radius: Float,
                expiration_date: wildcard_matcher,
                created_at: wildcard_matcher,
                updated_at: wildcard_matcher,
