@@ -23,7 +23,7 @@ describe "NotificationsController" do
 
     before do
       params = {
-        notification_id: notif.id
+        id: notif.id
       }
       post '/notifications/read', params, token_auth_header(user.token)
       notif.reload
