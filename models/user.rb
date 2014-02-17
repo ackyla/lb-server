@@ -42,8 +42,8 @@ class User < ActiveRecord::Base
   end
 
   def use_point(point)
-    return false if point.to_i < 1
-    self.gps_point -= point.to_i
+    return false if (point < 1 or self.gps_point < point)
+    self.gps_point -= point
     save
   end
 
