@@ -77,6 +77,13 @@ describe User do
         expect(user.gps_point).to eq(100)
       end
     end
+
+    context "ポイントが負の場合" do
+      it "Falseを返す" do
+        expect(user.use_point(-10)).to be_false
+        expect(user.gps_point).to eq(100)
+      end
+    end
   end
 
   describe "#update_avatar" do
