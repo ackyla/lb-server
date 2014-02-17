@@ -61,6 +61,14 @@ class User < ActiveRecord::Base
     hash
   end
 
+  def response_hash
+    hash = %w(id name gps_point gps_point_limit level exp created_at updated_at).inject({}){|r, k|
+      r[k] = self[k]
+      r
+    }
+    hash
+  end
+
   def to_json(options=nil)
     params = JSON.parse ActiveSupport::JSON.encode(self, options)
     if params["avatar"]

@@ -115,6 +115,10 @@ module Server
         @page = (params[:page] and params[:page].to_i > 0) ? params[:page] : 1
         @per = (params[:per] and params[:per].to_i > 0) ? params[:per] : 30
       end
+
+      def user_avatar_url(user)
+        uri(user.avatar.url, true, false)
+      end
     end
 
     get '/' do

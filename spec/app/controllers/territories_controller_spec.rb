@@ -51,7 +51,10 @@ describe "TerritoriesController" do
         character: {
           id: char.id,
           name: char.name,
-          distance: char.distance
+          cost: char.cost,
+          distance: char.distance,
+          precision: char.precision,
+          radius: char.radius
         },
         coordinate: {
           lat: Float,
@@ -100,7 +103,7 @@ describe "TerritoriesController" do
 
     it "Detectionが取得できる" do
       json = JSON.parse last_response.body
-      expect(json["locations"].map{|l| l["location_id"]}).to include(loc.id)
+      expect(json["locations"].map{|l| l["id"]}).to include(loc.id)
     end
   end
 
@@ -129,7 +132,10 @@ describe "TerritoriesController" do
         character: {
           id: ter.character.id,
           name: ter.character.name,
-          distance: ter.character.distance
+          cost: char.cost,
+          distance: char.distance,
+          precision: char.precision,
+          radius: char.radius
         },
         coordinate: {
           lat: params[:latitude],
@@ -178,7 +184,10 @@ describe "TerritoriesController" do
         character: {
           id: ter.character.id,
           name: ter.character.name,
-          distance: ter.character.distance
+          cost: char.cost,
+          distance: char.distance,
+          precision: char.precision,
+          radius: char.radius
         },
         coordinate: {
           lat: Float,

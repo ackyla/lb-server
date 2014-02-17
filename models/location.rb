@@ -7,13 +7,12 @@ class Location < ActiveRecord::Base
 
   validate :validate_interval, :if => :user_id, :on => :create
 
-  def to_hash
-    hash = Hash[self.attributes]
-    hash[:location_id] = self.id
-    hash.delete "id"
-    hash[:latitude] = self.coordinate.lat
-    hash[:longitude] = self.coordinate.long
-    hash.delete "coordinate_id"
+  def response_hash
+    hash = %w(id created_at updated_at).inject({}){|r, k|
+      r[k] = self[k]
+      r
+    }
+    hash["coordinate"] = self.coordinate.response_hash
     hash
   end
 

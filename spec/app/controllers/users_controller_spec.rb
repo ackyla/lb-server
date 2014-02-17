@@ -26,12 +26,12 @@ describe "UsersController" do
           name: "user_1"
         }
       }
-      
+
       before { post "/users/create", {name: "user_1"} }
       it_behaves_like "response"
       it_behaves_like "json"
     end
-    
+
     describe "#parameter_not_found" do
       before { post "/users/create" }
       it_behaves_like "404"
@@ -135,7 +135,10 @@ describe "UsersController" do
                character: {
                  id: char.id,
                  name: char.name,
-                 distance: char.distance
+                  cost: char.cost,
+                  distance: char.distance,
+                  precision: char.precision,
+                  radius: char.radius
                },
                detection_count: Integer,
                coordinate: {
@@ -220,7 +223,10 @@ describe "UsersController" do
             character: {
               id: char.id,
               name: char.name,
-              distance: char.distance
+              cost: char.cost,
+              distance: char.distance,
+              precision: char.precision,
+              radius: char.radius
             },
             radius: char.radius,
             precision: char.precision,
@@ -256,7 +262,7 @@ describe "UsersController" do
     before do
       post "/user/avatar", {avatar: File.open(Padrino.root('public/avatars', 'default_avatar.jpg'))}, token_auth_header(user.token)
     end
-    
+
     it_behaves_like "response"
     it_behaves_like "json"
   end

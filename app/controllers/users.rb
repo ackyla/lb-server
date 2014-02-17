@@ -31,17 +31,11 @@ Server::App.controllers :users do
     territories = @user.my_territories.order(Territory.arel_table[:updated_at].desc)
     territories = territories.page(@page).per(@per) if !@all
 
-    previous_page = (!@all and territories.prev_page) ? territories.prev_page : 0 
+    previous_page = (!@all and territories.prev_page) ? territories.prev_page : 0
     next_page = (!@all and territories.next_page) ? territories.next_page : 0
     has_more = (!@all and territories.last_page?) ? false : true
 
-    territories = territories.map{|t|
-      obj = JSON.parse(t.to_json(:only => [:id, :radius, :precision, :detection_count, :expiration_date, :created_at, :updated_at]))
-      obj["character"] = JSON.parse(t.character.to_json(:only => [:id, :name, :distance]))
-      obj["coordinate"] = JSON.parse(t.coordinate.to_json(:only => [:lat, :long]))
-      obj
-    }
-
+    territories = territories.map(&:response_hash)
     {
       previous_page: previous_page,
       next_page: next_page,
@@ -68,10 +62,7 @@ Server::App.controllers :users do
         notification_hash["territory_owner"] = JSON.parse(n.detection.territory.owner.to_json(:only => [:id, :name, :level, :created_at, :updated_at, :avatar], :absolute_url => uri(n.detection.territory.owner.avatar.url, true, false)))
       else
         hash = JSON.parse(n.to_json(:only => [:id, :notification_type, :created_at, :updated_at, :read]))
-        territory_hash = JSON.parse(n.detection.territory.to_json(:only => [:id, :precision, :radius, :detection_count, :expiration_date, :created_at, :updated_at]))
-        territory_hash["character"] = JSON.parse(n.detection.territory.character.to_json(:only => [:id, :name, :distance]))
-        territory_hash["coordinate"] = JSON.parse(n.detection.territory.coordinate.to_json(:only => [:lat, :long]))
-        notification_hash["territory"] = territory_hash
+        notification_hash["territory"] = n.detection.territory.response_hash
       end
       notification_hash
     }
@@ -102,7 +93,7 @@ Server::App.controllers :users do
     rescue
       halt 404
     end
-    
+
     locations = Location.where("user_id = ? AND created_at >= ? AND created_at < ?", @user.id, date, date+1)
 
     pre = 0

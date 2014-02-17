@@ -42,6 +42,16 @@ class Territory < ActiveRecord::Base
     hash
   end
 
+  def response_hash
+    hash = %w(id precision radius detection_count expiration_date created_at updated_at).inject({}){|r, key|
+      r[key] = self[key]
+      r
+    }
+    hash["coordinate"] = self.coordinate.response_hash
+    hash["character"] = self.character.response_hash
+    hash
+  end
+
   def supply(point)
     return false unless owner.use_point point
     now = DateTime.now

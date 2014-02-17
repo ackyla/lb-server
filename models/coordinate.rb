@@ -6,6 +6,13 @@ class Coordinate < ActiveRecord::Base
     self.where(opts).first_or_create
   end
 
+  def response_hash
+    %w(lat long).inject({}){|r, k|
+      r[k] = self[k]
+      r
+    }
+  end
+
   def distance(loc)
     y1 = self.lat * Math::PI / 180
     x1 = self.long * Math::PI / 180
