@@ -17,7 +17,10 @@ gem 'rake'
 gem 'bcrypt-ruby', :require => 'bcrypt'
 gem 'slim'
 gem 'activerecord', '>= 3.1', :require => 'active_record'
-gem 'sqlite3'
+
+group :test, :development do
+  gem 'sqlite3'
+end
 
 # Test requirements
 group :test do
@@ -25,6 +28,12 @@ group :test do
   gem 'rack-test', :require => 'rack/test'
   gem 'json_expressions'
   gem 'factory_girl', '4.3.0'
+  gem 'database_cleaner'
+end
+
+group :development do
+  gem 'capistrano'
+  gem 'capistrano-bundler'
 end
 
 # Padrino Stable Gem
@@ -38,9 +47,10 @@ gem 'padrino', '0.11.4'
 #   gem 'padrino-' + g, '0.11.3'
 # end
 
-gem 'mysql2'
-gem 'memcached'
-gem 'database_cleaner'
+group :production do
+  gem 'mysql2'
+  gem 'memcached'
+end
 
 gem 'carrierwave', :require => %w(carrierwave carrierwave/orm/activerecord)
 
